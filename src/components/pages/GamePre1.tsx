@@ -9,7 +9,7 @@ const SCanvas = styled.canvas`
     background-color: skyblue 
 `;
 
-export const Game = () => {
+export const GamePre1 = () => {
     const BOX_SIZE = 7;
     const [horizontalCount, setHorizontalCount] = useState<number>(0);
     const [verticalCount, setVerticalCount] = useState<number>(0);
