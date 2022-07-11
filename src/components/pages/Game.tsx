@@ -34,7 +34,7 @@ export const Game = memo(() => {
     const INVADER_SIZE = 5;
     const INVADER_MOVEMENT_HORIZONTAL = 5; //敵の横移動距離
     const INVADER_MOVEMENT_VERTICAL = 3; //敵の縦移動距離
-    const INVADER_SPEED = 5; //敵の移動速度(0に近づくほど速い)
+    const INVADER_SPEED = 20; //敵の移動速度(0に近づくほど速い)
     const INVADERS_DISTANCE_HORIZONTAL = 8; //敵の横間隔
     const INVADERS_DISTANCE_VERTICAL = 2; //敵の縦間隔
     const INVADERS_START_MARGIN_LEFT = 20; //スタート時の左側マージン
@@ -56,14 +56,9 @@ export const Game = memo(() => {
 
 
     const [timeCount, setTimeCount] = useState<number>(0);
-    // const [horizontalCount, setHorizontalCount] = useState<number>(0);
-    // const [verticalCount, setVerticalCount] = useState<number>(0);
-    // const [horizontalDirection, setHorizontalDirection] = useState<boolean>(true);
-    // const [verticalDirection, setVerticalDirection] = useState<boolean>(true);
     const [attackArray, setAttackArrary] = useState<Array<attackObj>>([]);
     const [invaders, setInvaders] = useState<Array<invaderObj>>(INVADERS_DEFAULT_POSITION)
     const [playerPosition, setPlayerPosition] = useState<number>(0);
-    // const [invadersHorizontalDirection, setInvaderHorizontalDirection] = useState<boolean>(true);
 
     const timeCountRef = useRef<number>(0);
     const playerPositionRef = useRef<number>(0);
@@ -81,7 +76,6 @@ export const Game = memo(() => {
         const ctx: CanvasRenderingContext2D = getContext();
         // if()
         setPlayerPosition((count) => count -= PLAYER_MOVEMENT);
-
     }
 
 
@@ -107,26 +101,6 @@ export const Game = memo(() => {
         return canvas.getContext('2d');
     }, []);
 
-
-    // //カウント開始
-    // const gameStart = useCallback(() => {
-    //     //カウント
-    //     if (intervalRef.current !== null) {
-    //         return;
-    //     }
-    //     intervalRef.current = setInterval(() => {
-    //         setHorizontalCount((prevState: number) => prevState + 1)
-    //         setVerticalCount((prevState: number) => prevState + 1)
-    //     }, 10)
-    // }, []);
-    // //カウント終了
-    // const gameStop = useCallback(() => {
-    //     if (intervalRef.current === null) {
-    //         return;
-    //     }
-    //     clearInterval(intervalRef.current);
-    //     intervalRef.current = null;
-    // }, []);
 
 
     //カウント開始
@@ -169,11 +143,12 @@ export const Game = memo(() => {
                         invader.y += INVADER_MOVEMENT_VERTICAL;
                     })
                 }
-            }
-            //移動方向
-            if (invaders[9].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
-                || invaders[0].x < 0 + INVADERS_MARGIN) {
-                invadersHorizontalDirection.current = !invadersHorizontalDirection.current;
+                //移動方向
+                if (invaders[9].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
+                    || invaders[0].x < 0 + INVADERS_MARGIN) {
+                    invadersHorizontalDirection.current = !invadersHorizontalDirection.current;
+                }
+
             }
 
             invaders.map((invader) => {
@@ -202,11 +177,6 @@ export const Game = memo(() => {
                 <Button m={2} onClick={gameStart}>START</Button>
                 <Button m={2} onClick={gameStop}>STOP</Button>
             </Flex>
-            {/* <div>
-                {attackArray.map((attack) => { return <p>{attack.x}</p> })}
-            </div> */}
-
-            {/* <span>{playerPosition}</span> */}
             <p>{timeCount}</p>
             <p>{playerPositionRef.current}</p>
             <p>{attackArrayRef.current.length}</p>
