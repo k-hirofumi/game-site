@@ -136,7 +136,7 @@ export const Game = memo(() => {
 
                     invadersHorizontalDirection.current ? invader.x += INVADER_MOVEMENT_HORIZONTAL : invader.x -= INVADER_MOVEMENT_HORIZONTAL
                 });
-                //移動方向
+                //移動
                 if (invaders[9].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
                     || invaders[0].x < 0 + INVADERS_MARGIN) {
                     invaders.map((invader) => {
@@ -152,8 +152,25 @@ export const Game = memo(() => {
             }
 
             invaders.map((invader) => {
-                ctx.fillRect(invader.x, invader.y, INVADER_SIZE, INVADER_SIZE);
+                //当たり判定
+                //プレイヤーの攻撃
+                if (invader.died) {
+                    return;
+                }
+                attackArrayRef.current.map((attack, index) => {
+                    if ((invader.x <= attack.x && invader.x + INVADER_SIZE >= attack.x) && (invader.y <= attack.y && invader.y + INVADER_SIZE >= attack.y)) {
+                        invader.died = true;
+                        attackArrayRef.current.splice(index, 1)
+                    }
+                })
+
+                if (!invader.died) {
+                    ctx.fillRect(invader.x, invader.y, INVADER_SIZE, INVADER_SIZE);
+                }
             })
+
+
+
 
 
         }, TIME_INTERVAL)
@@ -178,6 +195,9 @@ export const Game = memo(() => {
                 <Button m={2} onClick={gameStop}>STOP</Button>
             </Flex>
             <p>{timeCount}</p>
+            <p>{invaders[0].y}</p>
+            <p>{attackArrayRef.current.length > 0 ? attackArrayRef.current[0].y : ""}</p>
+
             <p>{playerPositionRef.current}</p>
             <p>{attackArrayRef.current.length}</p>
         </div>
