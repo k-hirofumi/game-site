@@ -1,4 +1,6 @@
-export const Result = () => {
+import { memo } from "react"
+
+export const Result = memo(() => {
 
 
 
@@ -6,4 +8,4 @@ export const Result = () => {
     return (
         <p>result</p>
     )
-}
+})

@@ -1,5 +1,5 @@
 import { Button, Flex, Spacer } from "@chakra-ui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useKey } from "react-use";
 import internal from "stream";
 import styled from "styled-components"
@@ -13,10 +13,15 @@ const SCanvas = styled.canvas`
 type attackObj = {
     x: number;
     y: number;
-    setedTime: number;
 }
 
-export const Game = () => {
+type invaderObj = {
+    died: boolean;
+    x: number;
+    y: number;
+}
+
+export const Game = memo(() => {
 
     const TIME_INTERVAL = 50;
     const BOX_SIZE = 7;
@@ -26,21 +31,64 @@ export const Game = () => {
     const PLAYER_MOVEMENT = 3;
     const ATTACK_MOVEMENT = 3;
     const ATTACK_AMOUNT = 10;
+    const INVADER_SIZE = 5;
+    const INVADER_MOVEMENT_HORIZONTAL = 5; //敵の横移動距離
+    const INVADER_MOVEMENT_VERTICAL = 3; //敵の縦移動距離
+    const INVADER_SPEED = 5; //敵の移動速度(0に近づくほど速い)
+    const INVADERS_DISTANCE_HORIZONTAL = 8; //敵の横間隔
+    const INVADERS_DISTANCE_VERTICAL = 2; //敵の縦間隔
+    const INVADERS_START_MARGIN_LEFT = 20; //スタート時の左側マージン
+    const INVADERS_MARGIN = 20; //最大移動位置
+    const INVADERS_AMOUNT = 30; //敵の数
+
+    const INVADERS_DEFAULT_POSITION: Array<invaderObj> = [
+        ...Array(INVADERS_AMOUNT)
+    ].map((value, index) => {
+        const row = Math.floor(index / 10)
+        const col = (index - row * 10) * (INVADER_SIZE + INVADERS_DISTANCE_HORIZONTAL)
+        return {
+            died: false,
+            x: col + INVADERS_START_MARGIN_LEFT,
+            y: row * (INVADER_SIZE + INVADERS_DISTANCE_VERTICAL)
+        }
+    });
+
+
 
     const [timeCount, setTimeCount] = useState<number>(0);
-    const [horizontalCount, setHorizontalCount] = useState<number>(0);
-    const [verticalCount, setVerticalCount] = useState<number>(0);
-    const [horizontalDirection, setHorizontalDirection] = useState<boolean>(true);
-    const [verticalDirection, setVerticalDirection] = useState<boolean>(true);
+    // const [horizontalCount, setHorizontalCount] = useState<number>(0);
+    // const [verticalCount, setVerticalCount] = useState<number>(0);
+    // const [horizontalDirection, setHorizontalDirection] = useState<boolean>(true);
+    // const [verticalDirection, setVerticalDirection] = useState<boolean>(true);
     const [attackArray, setAttackArrary] = useState<Array<attackObj>>([]);
+    const [invaders, setInvaders] = useState<Array<invaderObj>>(INVADERS_DEFAULT_POSITION)
+    const [playerPosition, setPlayerPosition] = useState<number>(0);
+    // const [invadersHorizontalDirection, setInvaderHorizontalDirection] = useState<boolean>(true);
+
+    const timeCountRef = useRef<number>(0);
+    const playerPositionRef = useRef<number>(0);
+    const attackArrayRef = useRef<Array<attackObj>>([]);
+    const invadersHorizontalDirection = useRef<boolean>(true);
+
 
     //KeyDown
-    const [playerPosition, setPlayerPosition] = useState<number>(0);
-    const playerMoveLeft = () => setPlayerPosition((count) => count -= PLAYER_MOVEMENT);
+    timeCountRef.current = timeCount;
+    playerPositionRef.current = playerPosition;
+    attackArrayRef.current = attackArray;
+
+
+    const playerMoveLeft = () => {
+        const ctx: CanvasRenderingContext2D = getContext();
+        // if()
+        setPlayerPosition((count) => count -= PLAYER_MOVEMENT);
+
+    }
+
+
     const playerMoveRight = () => setPlayerPosition((count) => count += PLAYER_MOVEMENT);
     const attack = () => {
         const ctx: CanvasRenderingContext2D = getContext();
-        setAttackArrary((attackA) => attackA = attackA.length < ATTACK_AMOUNT ? [...attackA, { x: -10, y: ctx.canvas.height - 10, setedTime: 0 }] : [...attackA])
+        setAttackArrary((attackA) => attackA = attackA.length < ATTACK_AMOUNT ? [...attackA, { x: playerPositionRef.current, y: ctx.canvas.height - 10 }] : [...attackA])
     }
 
     useKey('ArrowLeft', playerMoveLeft);
@@ -91,6 +139,48 @@ export const Game = () => {
         intervalRef.current = setInterval(() => {
             setTimeCount((count: number) => ++count)
 
+
+            const ctx: CanvasRenderingContext2D = getContext();
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            //PLYAER
+            ctx.fillRect(playerPositionRef.current, ctx.canvas.height - 10, PLAYER_SIZE, PLAYER_SIZE);
+
+            //ATTACK!!
+            for (let i = attackArrayRef.current.length - 1; i >= 0; i--) {
+                attackArrayRef.current[i].y -= ATTACK_MOVEMENT;
+                ctx.fillRect(attackArrayRef.current[i].x, attackArrayRef.current[i].y - PLAYER_SIZE, ATTACK_SIZE, ATTACK_SIZE);
+
+                if (attackArrayRef.current[0].y < 0) {
+                    setAttackArrary((array) => array = array.slice(1))
+                };
+            }
+
+            //INVADER
+            if (timeCountRef.current % INVADER_SPEED == 0) {
+                invaders.map((invader) => {
+
+                    invadersHorizontalDirection.current ? invader.x += INVADER_MOVEMENT_HORIZONTAL : invader.x -= INVADER_MOVEMENT_HORIZONTAL
+                });
+                //移動方向
+                if (invaders[9].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
+                    || invaders[0].x < 0 + INVADERS_MARGIN) {
+                    invaders.map((invader) => {
+                        invader.y += INVADER_MOVEMENT_VERTICAL;
+                    })
+                }
+            }
+            //移動方向
+            if (invaders[9].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
+                || invaders[0].x < 0 + INVADERS_MARGIN) {
+                invadersHorizontalDirection.current = !invadersHorizontalDirection.current;
+            }
+
+            invaders.map((invader) => {
+                ctx.fillRect(invader.x, invader.y, INVADER_SIZE, INVADER_SIZE);
+            })
+
+
         }, TIME_INTERVAL)
     }, []);
 
@@ -102,71 +192,6 @@ export const Game = () => {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
     }, []);
-
-
-    // //画面クリア処理
-    // useEffect(() => {
-    //     const ctx: CanvasRenderingContext2D = getContext();
-    //     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    // }, [verticalCount, horizontalCount])
-    // //横移動処理
-    // useEffect(() => {
-    //     const ctx: CanvasRenderingContext2D = getContext();
-    //     horizontalDirection ? ctx.fillRect(horizontalCount, 0, BOX_SIZE, BOX_SIZE) : ctx.fillRect(ctx.canvas.width - horizontalCount, 0, BOX_SIZE, BOX_SIZE);
-
-    //     if ((ctx.canvas.width - BOX_SIZE - horizontalCount) < 0) {
-    //         horizontalDirection ? setHorizontalDirection(false) : setHorizontalDirection(true);
-    //         setHorizontalCount(0);
-    //     }
-    // }, [horizontalCount])
-
-    // //縦移動処理
-    // useEffect(() => {
-    //     const ctx: CanvasRenderingContext2D = getContext();
-    //     verticalDirection ? ctx.fillRect(0, verticalCount, BOX_SIZE, BOX_SIZE) : ctx.fillRect(0, ctx.canvas.height - verticalCount, BOX_SIZE, BOX_SIZE);
-
-    //     if ((ctx.canvas.height - BOX_SIZE - verticalCount) < 0) {
-    //         verticalDirection ? setVerticalDirection(false) : setVerticalDirection(true);
-    //         setVerticalCount(0);
-    //     }
-    // }, [verticalCount])
-
-
-    //PLYAER
-    useEffect(() => {
-        const ctx: CanvasRenderingContext2D = getContext();
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.fillRect(playerPosition, ctx.canvas.height - 10, PLAYER_SIZE, PLAYER_SIZE);
-
-        if ((ctx.canvas.height - BOX_SIZE - playerPosition) < 0) {
-
-        }
-    }, [timeCount])
-
-    //ATTACK!!
-    useEffect(() => {
-        const ctx: CanvasRenderingContext2D = getContext();
-        for (let i = attackArray.length - 1; i >= 0; i--) {
-
-
-            if (attackArray[i].x < 0) {
-                attackArray[i].x = playerPosition;
-                attackArray[i].setedTime = timeCount;
-            };
-
-            const up = (timeCount - attackArray[i].setedTime) * ATTACK_MOVEMENT;
-            ctx.fillRect(attackArray[i].x, attackArray[i].y - up - PLAYER_SIZE, ATTACK_SIZE, ATTACK_SIZE);
-
-            if (attackArray[0].y - up < 0) {
-                setAttackArrary((array) => array = array.slice(1))
-            }
-        }
-
-    }, [timeCount])
-
-
-
 
 
 
@@ -183,9 +208,9 @@ export const Game = () => {
 
             {/* <span>{playerPosition}</span> */}
             <p>{timeCount}</p>
-            <p>{playerPosition}</p>
-            <p>{attackArray.length}</p>
+            <p>{playerPositionRef.current}</p>
+            <p>{attackArrayRef.current.length}</p>
         </div>
     )
-}
+})
 

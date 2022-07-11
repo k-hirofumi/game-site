@@ -1,4 +1,6 @@
-export const Home = () => {
+import { memo } from "react"
+
+export const Home = memo(() => {
 
 
 
@@ -6,4 +8,4 @@ export const Home = () => {
     return (
         <p>home</p>
     )
-}
+})
