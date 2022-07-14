@@ -1,5 +1,6 @@
-import { Button, Flex, Spacer } from "@chakra-ui/react";
+import { Box, Button, Flex, Spacer } from "@chakra-ui/react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useKey } from "react-use";
 import internal from "stream";
 import styled from "styled-components"
@@ -30,7 +31,7 @@ function getRandomArbitrary(min: number, max: number) {
     return Math.random() * (max - min) + min;
 }
 
-export const Game = memo(() => {
+export const Game1 = memo(() => {
 
     const TIME_INTERVAL = 50;
     const BOX_SIZE = 7;
@@ -71,6 +72,7 @@ export const Game = memo(() => {
     });
 
 
+    const navigate = useNavigate();
 
     const [timeCount, setTimeCount] = useState<number>(0);
     const [attackArray, setAttackArrary] = useState<Array<attackObj>>([]);
@@ -209,6 +211,8 @@ export const Game = memo(() => {
             //ゲームオーバー判定
             if (playerLifePointsRef.current == 0) {
                 gameStop();
+                //結果へ遷移
+                navigate('/game1/result');
             }
 
 
@@ -253,11 +257,11 @@ export const Game = memo(() => {
 
 
     return (
-        <div>
+        <Box w={'80vw'} >
             <SCanvas className="canvas" ref={canvasRef} />
             <Flex>
-                <Button m={2} onClick={gameStart}>START</Button>
-                <Button m={2} onClick={gameStop}>STOP</Button>
+                <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStart}>START</Button>
+                <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStop}>STOP</Button>
             </Flex>
             <p>{timeCount}</p>
             <p>{playerLifePoints}</p>
@@ -265,7 +269,7 @@ export const Game = memo(() => {
 
             <p>{playerPositionRef.current.x}</p>
             <p>{attackArrayRef.current.length}</p>
-        </div>
+        </Box>
     )
 })
 
