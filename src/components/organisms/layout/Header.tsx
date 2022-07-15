@@ -69,7 +69,7 @@ export function Header() {
                             as={IoGameControllerOutline}
                         />
 
-                        <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
+                        <Flex display={{ base: 'none', md: 'flex' }} ml={200}>
                             <DesktopNav />
                         </Flex>
                     </Flex>

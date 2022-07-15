@@ -84,6 +84,7 @@ export const Game1 = memo(() => {
     const timeCountRef = useRef<number>(0);
     const playerPositionRef = useRef<playerObj>({ life: 0, x: 0, y: 0 });
     const playerLifePointsRef = useRef<number>(0);
+    const invadersRef = useRef<Array<invaderObj>>([]);
     const attackArrayRef = useRef<Array<attackObj>>([]);
     const invaderAttackArrayRef = useRef<Array<attackObj>>([]);
     const invadersHorizontalDirection = useRef<boolean>(true);
@@ -95,6 +96,7 @@ export const Game1 = memo(() => {
     playerLifePointsRef.current = playerLifePoints;
     attackArrayRef.current = attackArray;
     invaderAttackArrayRef.current = invaderAttackArray;
+    invadersRef.current = invaders;
 
 
     const playerMoveLeft = () => {
@@ -212,7 +214,19 @@ export const Game1 = memo(() => {
             if (playerLifePointsRef.current == 0) {
                 gameStop();
                 //結果へ遷移
-                navigate('/game1/result');
+                const getDefeatedCount = (() => {
+                    let count: number = 0;
+                    invadersRef.current.map((invader) => {
+                        count += invader.died ? 1 : 0;
+                    })
+                    return count;
+
+                })
+                navigate('/game1/result', {
+                    state: {
+                        time: timeCountRef.current * (TIME_INTERVAL / 1000), defeatedCount: getDefeatedCount()
+                    }
+                });
             }
 
 
@@ -263,12 +277,6 @@ export const Game1 = memo(() => {
                 <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStart}>START</Button>
                 <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStop}>STOP</Button>
             </Flex>
-            <p>{timeCount}</p>
-            <p>{playerLifePoints}</p>
-            <p>{attackArrayRef.current.length > 0 ? attackArrayRef.current[0].y : ""}</p>
-
-            <p>{playerPositionRef.current.x}</p>
-            <p>{attackArrayRef.current.length}</p>
         </Box>
     )
 })
