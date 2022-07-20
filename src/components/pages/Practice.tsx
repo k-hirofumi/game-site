@@ -1,157 +1,171 @@
 import { Button } from "@chakra-ui/react";
 import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { RiContactsBookLine } from "react-icons/ri";
 import { useKey, usePrevious } from "react-use";
-
-export const Practice = memo(() => {
-
-    const [count, setCount] = useState(0);
-    const [eventCnt, setEventCnt] = useState(0);
-    const countRef = useRef<number>(0);
-    // const [keypressEvent, setKeypressEvent] = useState<((e: KeyboardEvent) => void)>((e: KeyboardEvent) => "")
-    countRef.current = count;
+import styled from "styled-components"
+import invImg from "../../invader.png"
 
 
+//キャンバススタイル
+const SCanvas = styled.canvas`
+    width: 70%;
+    background-color: white 
+`;
 
-    // var aaa = 0;
-    // useEffect(() => {
-    //     aaa = 1
-    // })
-    const onCnt = useCallback(() => {
-        setCount((cnt) => cnt + 1);
-        console.log(count)
-    }, [])
+// export const Practice = () => {
+// const canvasRef = useRef<HTMLCanvasElement>(new HTMLCanvasElement);
+// const c2Ref = useRef(canvasRef.current.getContext('2d'))
+// const imgRef = useRef(new Image)
 
-    const onEventCnt = useCallback(() => {
-        // setCount((cnt) => cnt + 1);
-        console.log(countRef.current)
-        setEventCnt(countRef.current);
-    }, [count])
+// useEffect(() => {
+//     const canvas: any = canvasRef.current;
+//     var c2 = canvas.getContext('2d');
+//     c2Ref.current = c2;
 
-    useKey('ArrowLeft', onCnt);
-    useKey('ArrowRight', onEventCnt);
-    // const keypress_ivent = (e: KeyboardEvent) => {
-    //     if (e.key === 'Enter') {
-    //         console.log(count)
-    //         onCnt();
-    //     }
-    //     else if (e.key === ' ') {
-    //         console.log("count")
-    //         onEventCnt();
-    //     }
-    // }
 
-    // useEffect(() => {
-    //     // setKeypressEvent(keypress_ivent);
-    // }, [count])
-    // const prevKeypressEvent = usePrevious(keypress_ivent);
+//     // Image オブジェクトを生成
+//     var img = new Image();
+//     img.src = '../../../public/images/invader.png';
+//     imgRef.current = img;
 
-    // document.removeEventListener('keypress', keypress_ivent);
-    // document.addEventListener('keypress', keypress_ivent);
-    // useEffect(() => {
-    //     document.removeEventListener('keypress', keypress_ivent);
-    // }, [count])
+//     // // Image オブジェクトを生成
+//     // var img = new Image();
+//     // img.src = '../../../public/images/invader.png';
+
+//     // // 画像読み込み終了してから描画
+//     // img.onload = function () {
+//     //     c2.drawImage(img, 10, 10, 50, 50);
+//     //     alert(img.src)
+//     // }
+// }, [])
+
+// const on = () => {
+//     // 画像読み込み終了してから描画
+//     imgRef.current.onload = function () {
+//         c2Ref.current!.drawImage(imgRef.current, 10, 10, 50, 50);
+//         alert(imgRef.current.src)
+//     }
+// }
+
+// return (
+//     <>
+//         <SCanvas className="canvas" ref={canvasRef} />
+//         <p>aa</p>
+//         <Button onClick={on}>ボタン</Button>
+//     </>
+// )
+
+
+export const Practice = () => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const image = new Image();
+        image.src = invImg;
+
+        image.addEventListener('load', function () {
+            // 背景画像
+            canvas.width = 3000;
+            canvas.height = 3000;
+            const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
+            ctx.drawImage(image, 10, 10);
+
+
+        });
+    });
 
     return (
-        <>
-            <p>{count}</p>
-            <p>{eventCnt}</p>
-            {/* {console.log(aaa)} */}
 
-        </>
+        <div >
 
-    )
-})
+            <canvas
+                ref={canvasRef}
+                id='background'
+                width={4000}
+                height={4000}
+            />
+        </div>
+    );
+}
 
-// export const Practice = memo(() => {
 
+
+
+
+
+// export const Practice = () => {
 //     const [count, setCount] = useState(0);
-//     const [eventCnt, setEventCnt] = useState(0);
-//     const countRef = useRef(null);
-//     // const [keypressEvent, setKeypressEvent] = useState<((e: KeyboardEvent) => void)>((e: KeyboardEvent) => "")
-
-
-
-
-//     // var aaa = 0;
-//     // useEffect(() => {
-//     //     aaa = 1
-//     // })
-//     const onCnt = useCallback(() => {
-//         setCount((cnt) => cnt + 1);
-//         console.log(count)
-//     }, [])
-
-//     const onEventCnt = useCallback(() => {
-//         // setCount((cnt) => cnt + 1);
-//         console.log(count)
-//         setEventCnt(count);
-//     }, [count])
-
-//     // useKey('ArrowLeft', onCnt);
-//     // useKey('ArrowRight', onEventCnt);
-//     const keypress_ivent = (e: KeyboardEvent) => {
-//         if (e.key === 'Enter') {
-//             console.log(count)
-//             onCnt();
-//         }
-//         else if (e.key === ' ') {
-//             console.log("count")
-//             onEventCnt();
-//         }
-//     }
-
+//     const countRef = useRef(0);
+//     countRef.current = count;
 //     useEffect(() => {
-//         // setKeypressEvent(keypress_ivent);
-//     }, [count])
-//     // const prevKeypressEvent = usePrevious(keypress_ivent);
-
-//     document.removeEventListener('keypress', keypress_ivent);
-//     document.addEventListener('keypress', keypress_ivent);
-//     // useEffect(() => {
-//     //     document.removeEventListener('keypress', keypress_ivent);
-//     // }, [count])
-
-//     return (
-//         <>
-//             <p>{count}</p>
-//             <p>{eventCnt}</p>
-//             {/* {console.log(aaa)} */}
-
-//         </>
-
-//     )
-// })
-
-
-// export const Practice = memo(() => {
-
-//     const [count, setCount] = useState(0);
-//     const [eventCnt, setEventCnt] = useState(0);
-
-
-
-//     // var aaa = 0;
-//     // useEffect(() => {
-//     //     aaa = 1
-//     // })
-//     const onCnt = useCallback(() => {
-//         setCount((cnt) => cnt + 1);
+//         console.log("useffect")
+//         setCount((count) => count + 1)
+//         console.log("useEffect pure :" + count)
+//         console.log("useEffect ref :" + countRef.current)
+//     }, [])
+//     useEffect(() => {
+//         console.log("useffect2")
+//         setCount((count) => count + 1)
+//         console.log("useEffect pure2 :" + count)
+//         console.log("useEffect ref2 :" + countRef.current)
 //     }, [])
 
-//     const onEventCnt = useCallback(() => {
-//         setEventCnt(count);
-//     }, [count])
+//     console.log("practice")
+//     console.log("practice pure :" + count)
+//     console.log("practice ref :" + countRef.current)
+
 
 
 //     return (
 //         <>
-//             <Button onClick={onCnt}>button1</Button>
-//             <p>{count}</p>
-//             <Button onClick={onEventCnt}>button1</Button>
-//             <p>{eventCnt}</p>
-//             {/* {console.log(aaa)} */}
+//             <p>{countRef.current}</p>
+//             {console.log("element")}
+//             {console.log("element pure :" + count)}
+//             {console.log("element ref :" + countRef.current)}
 
 //         </>
-
 //     )
-// })
+// }
+
+
+// type test = {
+//     id: number;
+//     age: number;
+// }
+
+// export const Practice = () => {
+//     const [count, setCount] = useState<number>(0);
+//     const [count2, setCount2] = useState<number>(0);
+//     const [test, setTest] = useState<test>({ id: 1, age: 1 });
+//     const testRef = useRef(0)
+//     let te = 1
+
+
+//     console.log("000A")
+//     useEffect(() => {
+//         setCount(count + 1);
+//         console.log("111")
+//     }, [count2])
+
+//     const clickButton = useCallback(() => {
+//         // test.id += 1;
+//         // console.log(test.id)
+//         setCount2((count2) => count2 + 1);
+//         te += 1
+//         console.log("te :" + te)
+//         console.log("222")
+//     }, [])
+//     console.log("000B")
+
+//     return (
+//         <>
+//             <p>aa</p>
+//             <Button onClick={clickButton}>ボタン</Button>
+//             {console.log("1 :" + count)}
+//             {console.log("2 :" + count2)}
+
+//         </>
+//     )
+// }

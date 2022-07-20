@@ -1,14 +1,16 @@
 import { Box, Button, Flex, Spacer } from "@chakra-ui/react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { RiContactsBookLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import { useKey } from "react-use";
 import internal from "stream";
 import styled from "styled-components"
+import invImg from "../../invader.png"
 
 //キャンバススタイル
 const SCanvas = styled.canvas`
     width: 70%;
-    background-color: skyblue 
+    background-color: black 
 `;
 
 type attackObj = {
@@ -35,18 +37,18 @@ export const Game1 = memo(() => {
 
     const TIME_INTERVAL = 50;
     const BOX_SIZE = 7;
-    const PLAYER_SIZE = 7;
+    const PLAYER_SIZE = 6;
     const ATTACK_SIZE = 3;
+    const ATTACK_MOVEMENT = 3;
+    const ATTACK_AMOUNT = 99;
     const BOX_MOVEMENT = 1;
     const PLAYER_MOVEMENT = 3;
     const PLAYER_INITIAL_POSITON_X = 10;
     const PLAYER_INITIAL_POSITON_Y = 10; //画面下からの距離
     const PLAYER_LIFE_POINT = 3;
-    const ATTACK_MOVEMENT = 3;
-    const ATTACK_AMOUNT = 3;
     const INVADER_SIZE = 5;
     const INVADER_MOVEMENT_HORIZONTAL = 5; //敵の横移動距離
-    const INVADER_MOVEMENT_VERTICAL = 3; //敵の縦移動距離
+    const INVADER_MOVEMENT_VERTICAL = 6; //敵の縦移動距離
     const INVADER_SPEED = 10; //敵の移動速度(0に近づくほど速い)
     const INVADERS_DISTANCE_HORIZONTAL = 8; //敵の横間隔
     const INVADERS_DISTANCE_VERTICAL = 2; //敵の縦間隔
@@ -81,6 +83,7 @@ export const Game1 = memo(() => {
     const [playerPosition, setPlayerPosition] = useState<playerObj>({ life: 0, x: 0, y: 0 });
     const [playerLifePoints, setPlayerLifePoints] = useState<number>(PLAYER_LIFE_POINT);
 
+
     const timeCountRef = useRef<number>(0);
     const playerPositionRef = useRef<playerObj>({ life: 0, x: 0, y: 0 });
     const playerLifePointsRef = useRef<number>(0);
@@ -88,6 +91,8 @@ export const Game1 = memo(() => {
     const attackArrayRef = useRef<Array<attackObj>>([]);
     const invaderAttackArrayRef = useRef<Array<attackObj>>([]);
     const invadersHorizontalDirection = useRef<boolean>(true);
+
+    const invaderImg = useRef<any>(new Image);
 
 
     //KeyDown
@@ -116,7 +121,7 @@ export const Game1 = memo(() => {
 
     const attack = () => {
         const ctx: CanvasRenderingContext2D = getContext();
-        setAttackArrary((attackA) => attackA = attackA.length < ATTACK_AMOUNT ? [...attackA, { x: playerPositionRef.current.x, y: ctx.canvas.height - 10 }] : [...attackA])
+        setAttackArrary((attackA) => attackA = attackA.length < ATTACK_AMOUNT ? [...attackA, { x: playerPositionRef.current.x + (PLAYER_SIZE / 2), y: ctx.canvas.height - 10 }] : [...attackA])
     }
 
     useKey('ArrowLeft', playerMoveLeft);
@@ -136,7 +141,6 @@ export const Game1 = memo(() => {
     }, []);
 
 
-
     //カウント開始
     const gameStart = useCallback(() => {
         const ctx: CanvasRenderingContext2D = getContext();
@@ -150,21 +154,39 @@ export const Game1 = memo(() => {
             return;
         }
 
+        const img = new Image();
+
+        img.src = invImg;
+        invaderImg.current = img;
+
         intervalRef.current = setInterval(() => {
             setTimeCount((count: number) => ++count)
-            console.log(timeCount)
 
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
             //PLYAER
-            playerLifePointsRef.current > 1 ? ctx.fillStyle = "black" : ctx.fillStyle = "red";
-            ctx.fillRect(playerPositionRef.current.x, playerPositionRef.current.y, PLAYER_SIZE, PLAYER_SIZE);
-            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.moveTo(playerPositionRef.current.x + (PLAYER_SIZE / 2), playerPositionRef.current.y);
+            ctx.lineTo(playerPositionRef.current.x, playerPositionRef.current.y + PLAYER_SIZE);
+            ctx.lineTo(playerPositionRef.current.x + PLAYER_SIZE, playerPositionRef.current.y + PLAYER_SIZE);
+            ctx.closePath();
+            ctx.fillStyle = "white";
+            ctx.fill();
+            playerLifePointsRef.current > 1 ? ctx.strokeStyle = "blue" : ctx.strokeStyle = "red";
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+
 
             //ATTACK!!
             for (let i = attackArrayRef.current.length - 1; i >= 0; i--) {
                 attackArrayRef.current[i].y -= ATTACK_MOVEMENT;
-                ctx.fillRect(attackArrayRef.current[i].x, attackArrayRef.current[i].y - PLAYER_SIZE, ATTACK_SIZE, ATTACK_SIZE);
+                // ctx.fillRect(attackArrayRef.current[i].x, attackArrayRef.current[i].y - PLAYER_SIZE, ATTACK_SIZE, ATTACK_SIZE);
+                //枠線あり
+                ctx.beginPath();
+                ctx.arc(attackArrayRef.current[i].x, attackArrayRef.current[i].y, ATTACK_SIZE / 2, 0, Math.PI * 2, true);
+                ctx.fillStyle = "lightskyblue";
+                ctx.fill();
 
                 if (attackArrayRef.current[0].y < 0) {
                     setAttackArrary((array) => array = array.slice(1))
@@ -206,7 +228,8 @@ export const Game1 = memo(() => {
                     invaderAttackArrayRef.current.splice(i, 1);
                     setPlayerLifePoints((life) => --life)
                 }
-
+                ctx.beginPath();
+                ctx.fillStyle = "white";
                 ctx.fillRect(invaderAttackArrayRef.current[i].x, invaderAttackArrayRef.current[i].y, INVADERS_ATTACK_SIZE, INVADERS_ATTACK_SIZE);
             }
 
@@ -243,10 +266,23 @@ export const Game1 = memo(() => {
                     }
                 }
 
+                //ゲーム勝利判定
+                if (getDefeatedCount() == INVADERS_AMOUNT) {
+                    isEnd();
+                }
+
                 if (!invader.died) {
-                    ctx.fillRect(invader.x, invader.y, INVADER_SIZE, INVADER_SIZE);
+                    // ctx.fillStyle = "white";
+                    // ctx.fillRect(invader.x, invader.y, INVADER_SIZE, INVADER_SIZE);
+                    ctx.drawImage(invaderImg.current, invader.x, invader.y, INVADER_SIZE, INVADER_SIZE)
                 }
             })
+
+            //ゲーム敗北判定
+            if (playerLifePointsRef.current == 0) {
+                isEnd();
+            }
+
 
 
         }, TIME_INTERVAL)
@@ -261,12 +297,24 @@ export const Game1 = memo(() => {
         intervalRef.current = null;
     }, []);
 
-    // useEffect(() => {
-    //     if(playerLifePointsRef.current == 0){
-    //         clearInterval(intervalRef.current);
-    //         intervalRef.current = null;
-    //     }
-    // },[])
+    //ゲーム終了判定
+    const isEnd = useCallback(() => {
+        gameStop();
+        navigate('/game1/result', {
+            state: {
+                time: Math.floor(timeCountRef.current * (TIME_INTERVAL / 1000)), defeatedCount: getDefeatedCount()
+            }
+        });
+    }, [])
+
+    //結果へ遷移
+    const getDefeatedCount = useCallback(() => {
+        let count: number = 0;
+        invadersRef.current.map((invader) => {
+            count += invader.died ? 1 : 0;
+        })
+        return count;
+    }, [])
 
 
 
