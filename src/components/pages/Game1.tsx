@@ -8,6 +8,7 @@ import invImgBulue from "../../images/invaderBlue.png";
 import invImgYelow from "../../images/invaderYellow.png";
 import invBombImg from "../../images/invaderBomb.png";
 import invBombImg2 from "../../images/invaderBomb2.png";
+import { InvaderButtons } from "../atoms/InvaderButtons";
 
 //キャンバススタイル
 const SCanvas = styled.canvas`
@@ -15,28 +16,24 @@ const SCanvas = styled.canvas`
     background-color: black 
 `;
 
-type moveObj = {
+type MoveObj = {
     x: number;
     y: number;
 }
 
-type playerObj = moveObj & {
+type PlayerObj = MoveObj & {
     life: number;
 }
 
-type playerAttackObj = moveObj
+type PlayerAttackObj = MoveObj
 
-type invaderObj = moveObj & {
+type InvaderObj = MoveObj & {
     image: any;
     died: boolean;
 }
 
-type invaderAttackObj = moveObj & {
+type InvaderAttackObj = MoveObj & {
     image: any;
-}
-
-function getRandomArbitrary(min: number, max: number) {
-    return Math.random() * (max - min) + min;
 }
 
 export const Game1 = memo(() => {
@@ -84,7 +81,7 @@ export const Game1 = memo(() => {
         });
 
     //invaderの初期値
-    const INVADERS_DEFAULT_STATUS: Array<invaderObj> = [
+    const INVADERS_DEFAULT_STATUS: Array<InvaderObj> = [
         ...Array(INVADERS_AMOUNT)
     ].map((value, index) => {
         const row = Math.floor(index / INVADERS_ONE_ROW)
@@ -101,18 +98,18 @@ export const Game1 = memo(() => {
     const navigate = useNavigate();
 
     const [timeCount, setTimeCount] = useState<number>(0);
-    const [attackArray, setAttackArrary] = useState<Array<playerAttackObj>>([]);
-    const [playerPosition, setPlayerPosition] = useState<playerObj>({ life: 0, x: 0, y: 0 });
+    const [attackArray, setAttackArrary] = useState<Array<PlayerAttackObj>>([]);
+    const [playerPosition, setPlayerPosition] = useState<PlayerObj>({ life: 0, x: 0, y: 0 });
     const [playerLifePoints, setPlayerLifePoints] = useState<number>(PLAYER_LIFE_POINT);
 
     const canvasRef = useRef(null);
     const intervalRef = useRef<NodeJS.Timer | null>(null);
     const timeCountRef = useRef<number>(0);
-    const playerPositionRef = useRef<playerObj>({ life: 0, x: 0, y: 0 });
+    const playerPositionRef = useRef<PlayerObj>({ life: 0, x: 0, y: 0 });
     const playerLifePointsRef = useRef<number>(0);
-    const invadersRef = useRef<Array<invaderObj>>(INVADERS_DEFAULT_STATUS);
-    const attackArrayRef = useRef<Array<playerAttackObj>>([]);
-    const invaderAttackArrayRef = useRef<Array<invaderAttackObj>>([]);
+    const invadersRef = useRef<Array<InvaderObj>>(INVADERS_DEFAULT_STATUS);
+    const attackArrayRef = useRef<Array<PlayerAttackObj>>([]);
+    const invaderAttackArrayRef = useRef<Array<InvaderAttackObj>>([]);
     const invadersHorizontalDirection = useRef<boolean>(true);
 
     timeCountRef.current = timeCount;
@@ -120,6 +117,10 @@ export const Game1 = memo(() => {
     playerLifePointsRef.current = playerLifePoints;
     attackArrayRef.current = attackArray;
 
+    //範囲指定の乱数生成器
+    function getRandomArbitrary(min: number, max: number) {
+        return Math.random() * (max - min) + min;
+    }
 
     //左移動
     const playerMoveLeft = useCallback(() => {
@@ -333,8 +334,7 @@ export const Game1 = memo(() => {
             <SCanvas className="canvas" ref={canvasRef} />
             <Box as="p" bg={playerLifePoints <= 1 ? "red" : "blue"} w={20} h={10} textAlign="center" fontSize={24} color="white">{playerLifePoints}</Box>
             <Flex>
-                <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStart}>START</Button>
-                <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStop}>STOP</Button>
+                <InvaderButtons gameStart={gameStart} gameStop={gameStop} />
             </Flex>
         </Box>
     )
