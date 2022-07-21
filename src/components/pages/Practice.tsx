@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { RiContactsBookLine } from "react-icons/ri";
 import { useKey, usePrevious } from "react-use";
 import styled from "styled-components"
-import invImg from "../../invader.png"
+import invImg from "../../images/invader.png"
 
 
 //キャンバススタイル

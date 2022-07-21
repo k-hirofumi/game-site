@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { useKey } from "react-use";
 import internal from "stream";
 import styled from "styled-components"
-import invImg from "../../invader.png"
+import invImg from "../../images/invader.png";
+import invImgBulue from "../../images/invaderBlue.png";
+import invImgYelow from "../../images/invaderYellow.png";
+import invBombImg from "../../images/invaderBomb.png";
+import invBombImg2 from "../../images/invaderBomb2.png";
 
 //キャンバススタイル
 const SCanvas = styled.canvas`
@@ -13,18 +17,26 @@ const SCanvas = styled.canvas`
     background-color: black 
 `;
 
-type attackObj = {
-    x: number;
-    y: number;
-}
-
 type playerObj = {
     life: number;
     x: number;
     y: number;
 }
+
+type playerAttackObj = {
+    x: number;
+    y: number;
+}
+
 type invaderObj = {
+    image: any;
     died: boolean;
+    x: number;
+    y: number;
+}
+
+type invaderAttackObj = {
+    image: any;
     x: number;
     y: number;
 }
@@ -40,36 +52,59 @@ export const Game1 = memo(() => {
     const PLAYER_SIZE = 6;
     const ATTACK_SIZE = 3;
     const ATTACK_MOVEMENT = 3;
-    const ATTACK_AMOUNT = 99;
+    const ATTACK_AMOUNT = 3;
     const BOX_MOVEMENT = 1;
     const PLAYER_MOVEMENT = 3;
     const PLAYER_INITIAL_POSITON_X = 10;
     const PLAYER_INITIAL_POSITON_Y = 10; //画面下からの距離
     const PLAYER_LIFE_POINT = 3;
-    const INVADER_SIZE = 5;
+    const INVADER_SIZE = 7;
     const INVADER_MOVEMENT_HORIZONTAL = 5; //敵の横移動距離
     const INVADER_MOVEMENT_VERTICAL = 6; //敵の縦移動距離
     const INVADER_SPEED = 10; //敵の移動速度(0に近づくほど速い)
     const INVADERS_DISTANCE_HORIZONTAL = 8; //敵の横間隔
     const INVADERS_DISTANCE_VERTICAL = 2; //敵の縦間隔
     const INVADERS_START_MARGIN_LEFT = 20; //スタート時の左側マージン
-    const INVADERS_MARGIN = 20; //最大移動位置
-    const INVADERS_AMOUNT = 30; //敵の数
+    const INVADERS_START_MARGIN_TOP = 10; //スタート時の縦位置
+    const INVADERS_ONE_ROW = 10; //1行の敵の数
+    const INVADERS_AMOUNT = 41 //敵の数 ６行に収まるよう設定する
+    const INVADERS_MARGIN = 20; //最大移動位置    
+    const INVADERS_COLORS = [invImgYelow, invImgBulue, invImg, invImgYelow, invImgBulue, invImg]; //敵の色のバリエーション
+    const INVADERS_ATTACK = [invBombImg, invBombImg2]; //敵の色のバリエーション
     const INVADERS_ATTACK_MOVEMENT = 3;
     const INVADERS_ATTACK_AMOUNT = 10;
-    const INVADERS_ATTACK_SIZE = 7;
+    const INVADERS_ATTACK_SIZE = 14;
     const INVADER_ATTACK_MOVEMENT = 5; //敵攻撃の移動
     const INVADER_ATTACK_FREQUENCY = 10; //敵攻撃の頻度(0に近づくほど多い)
+    const DIFENSE_LINE = 15; //防衛ライン
 
-    const INVADERS_DEFAULT_POSITION: Array<invaderObj> = [
+    //invaderの画像を取得
+    const INVADER_IMAGES: any =
+        INVADERS_COLORS.map((value, index) => {
+            const img = new Image();
+            img.src = value;
+            return img
+        });
+
+    //invader攻撃の画像を取得
+    const INVADER_ATTACK_IMAGES: any =
+        INVADERS_ATTACK.map((value, index) => {
+            const img = new Image();
+            img.src = value;
+            return img
+        });
+
+    //invaderの初期値
+    const INVADERS_DEFAULT_STATUS: Array<invaderObj> = [
         ...Array(INVADERS_AMOUNT)
     ].map((value, index) => {
-        const row = Math.floor(index / 10)
-        const col = (index - row * 10) * (INVADER_SIZE + INVADERS_DISTANCE_HORIZONTAL)
+        const row = Math.floor(index / INVADERS_ONE_ROW)
+        const col = (index - row * INVADERS_ONE_ROW) * (INVADER_SIZE + INVADERS_DISTANCE_HORIZONTAL)
         return {
+            image: INVADER_IMAGES[row],
             died: false,
             x: col + INVADERS_START_MARGIN_LEFT,
-            y: row * (INVADER_SIZE + INVADERS_DISTANCE_VERTICAL)
+            y: row * (INVADER_SIZE + INVADERS_DISTANCE_VERTICAL) + INVADERS_START_MARGIN_TOP
         }
     });
 
@@ -77,9 +112,9 @@ export const Game1 = memo(() => {
     const navigate = useNavigate();
 
     const [timeCount, setTimeCount] = useState<number>(0);
-    const [attackArray, setAttackArrary] = useState<Array<attackObj>>([]);
-    const [invaders, setInvaders] = useState<Array<invaderObj>>(INVADERS_DEFAULT_POSITION)
-    const [invaderAttackArray, setInvaderAttackArrary] = useState<Array<attackObj>>([]);
+    const [attackArray, setAttackArrary] = useState<Array<playerAttackObj>>([]);
+    const [invaders, setInvaders] = useState<Array<invaderObj>>(INVADERS_DEFAULT_STATUS)
+    const [invaderAttackArray, setInvaderAttackArrary] = useState<Array<invaderAttackObj>>([]);
     const [playerPosition, setPlayerPosition] = useState<playerObj>({ life: 0, x: 0, y: 0 });
     const [playerLifePoints, setPlayerLifePoints] = useState<number>(PLAYER_LIFE_POINT);
 
@@ -88,8 +123,8 @@ export const Game1 = memo(() => {
     const playerPositionRef = useRef<playerObj>({ life: 0, x: 0, y: 0 });
     const playerLifePointsRef = useRef<number>(0);
     const invadersRef = useRef<Array<invaderObj>>([]);
-    const attackArrayRef = useRef<Array<attackObj>>([]);
-    const invaderAttackArrayRef = useRef<Array<attackObj>>([]);
+    const attackArrayRef = useRef<Array<playerAttackObj>>([]);
+    const invaderAttackArrayRef = useRef<Array<invaderAttackObj>>([]);
     const invadersHorizontalDirection = useRef<boolean>(true);
 
     const invaderImg = useRef<any>(new Image);
@@ -154,15 +189,16 @@ export const Game1 = memo(() => {
             return;
         }
 
-        const img = new Image();
-
-        img.src = invImg;
-        invaderImg.current = img;
-
+        //タイマー処理
         intervalRef.current = setInterval(() => {
             setTimeCount((count: number) => ++count)
 
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            //防衛ライン
+            ctx.beginPath();
+            ctx.fillStyle = "red";
+            ctx.fillRect(0, ctx.canvas.height - DIFENSE_LINE, ctx.canvas.width, 1);
 
             //PLYAER
             ctx.beginPath();
@@ -176,12 +212,9 @@ export const Game1 = memo(() => {
             ctx.lineWidth = 0.5;
             ctx.stroke();
 
-
-
             //ATTACK!!
             for (let i = attackArrayRef.current.length - 1; i >= 0; i--) {
                 attackArrayRef.current[i].y -= ATTACK_MOVEMENT;
-                // ctx.fillRect(attackArrayRef.current[i].x, attackArrayRef.current[i].y - PLAYER_SIZE, ATTACK_SIZE, ATTACK_SIZE);
                 //枠線あり
                 ctx.beginPath();
                 ctx.arc(attackArrayRef.current[i].x, attackArrayRef.current[i].y, ATTACK_SIZE / 2, 0, Math.PI * 2, true);
@@ -200,37 +233,34 @@ export const Game1 = memo(() => {
                     invadersHorizontalDirection.current ? invader.x += INVADER_MOVEMENT_HORIZONTAL : invader.x -= INVADER_MOVEMENT_HORIZONTAL
                 });
                 //移動
-                if (invaders[9].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
+                if (invaders[INVADERS_ONE_ROW - 1].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
                     || invaders[0].x < 0 + INVADERS_MARGIN) {
                     invaders.map((invader) => {
                         invader.y += INVADER_MOVEMENT_VERTICAL;
                     })
                 }
                 //移動方向
-                if (invaders[9].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
+                if (invaders[INVADERS_ONE_ROW - 1].x > ctx.canvas.width - INVADERS_MARGIN - INVADER_SIZE
                     || invaders[0].x < 0 + INVADERS_MARGIN) {
                     invadersHorizontalDirection.current = !invadersHorizontalDirection.current;
                 }
-
             }
 
-            //INVADER_ATTACK
+            //INVADER_ATTACKの描画
             if (timeCountRef.current % INVADER_ATTACK_FREQUENCY == 0) {
-                // invaderAttackArrayRef.current = [...invaderAttackArrayRef.current, { x: getRandomArbitrary(0, ctx.canvas.width - INVADERS_ATTACK_SIZE), y: 10 }];
-                invaderAttackArrayRef.current.push({ x: getRandomArbitrary(0, ctx.canvas.width - INVADERS_ATTACK_SIZE), y: 10 });
+                invaderAttackArrayRef.current.push({ image: INVADER_ATTACK_IMAGES[Math.floor(Math.random() * INVADER_ATTACK_IMAGES.length)], x: getRandomArbitrary(0, ctx.canvas.width - INVADERS_ATTACK_SIZE), y: 10 });
             }
             for (let i = invaderAttackArrayRef.current.length - 1; i >= 0; i--) {
                 invaderAttackArrayRef.current[i].y += INVADER_ATTACK_MOVEMENT;
 
-                if (((invaderAttackArrayRef.current[i].x >= playerPositionRef.current.x && invaderAttackArrayRef.current[i].x <= playerPositionRef.current.x + PLAYER_SIZE)
-                    || (invaderAttackArrayRef.current[i].x + INVADERS_ATTACK_SIZE >= playerPositionRef.current.x && invaderAttackArrayRef.current[i].x + INVADERS_ATTACK_SIZE <= playerPositionRef.current.x + PLAYER_SIZE))
+                if (((invaderAttackArrayRef.current[i].x <= playerPositionRef.current.x && invaderAttackArrayRef.current[i].x + INVADERS_ATTACK_SIZE >= playerPositionRef.current.x)
+                    || (invaderAttackArrayRef.current[i].x >= playerPositionRef.current.x + PLAYER_SIZE && invaderAttackArrayRef.current[i].x + INVADERS_ATTACK_SIZE <= playerPositionRef.current.x + PLAYER_SIZE))
                     && (invaderAttackArrayRef.current[i].y <= playerPositionRef.current.y && invaderAttackArrayRef.current[i].y + INVADERS_ATTACK_SIZE >= playerPositionRef.current.y)) {
                     invaderAttackArrayRef.current.splice(i, 1);
                     setPlayerLifePoints((life) => --life)
                 }
                 ctx.beginPath();
-                ctx.fillStyle = "white";
-                ctx.fillRect(invaderAttackArrayRef.current[i].x, invaderAttackArrayRef.current[i].y, INVADERS_ATTACK_SIZE, INVADERS_ATTACK_SIZE);
+                ctx.drawImage(invaderAttackArrayRef.current[i].image, invaderAttackArrayRef.current[i].x, invaderAttackArrayRef.current[i].y, INVADERS_ATTACK_SIZE, INVADERS_ATTACK_SIZE)
             }
 
             //ゲームオーバー判定
@@ -252,8 +282,7 @@ export const Game1 = memo(() => {
                 });
             }
 
-
-            invaders.map((invader) => {
+            invaders.map((invader, index) => {
                 //当たり判定
                 //プレイヤーの攻撃
                 if (invader.died) {
@@ -271,19 +300,20 @@ export const Game1 = memo(() => {
                     isEnd();
                 }
 
+                //invaderの描画
                 if (!invader.died) {
-                    // ctx.fillStyle = "white";
-                    // ctx.fillRect(invader.x, invader.y, INVADER_SIZE, INVADER_SIZE);
-                    ctx.drawImage(invaderImg.current, invader.x, invader.y, INVADER_SIZE, INVADER_SIZE)
+                    //防衛ラインを越えていれば敗北
+                    if (invader.y > ctx.canvas.height - DIFENSE_LINE) {
+                        isEnd();
+                    }
+                    ctx.drawImage(INVADERS_DEFAULT_STATUS[index].image, invader.x, invader.y, INVADER_SIZE, INVADER_SIZE)
                 }
             })
 
-            //ゲーム敗北判定
+            //ライフポイントがなくなれば敗北
             if (playerLifePointsRef.current == 0) {
                 isEnd();
             }
-
-
 
         }, TIME_INTERVAL)
     }, []);
@@ -321,6 +351,7 @@ export const Game1 = memo(() => {
     return (
         <Box w={'80vw'} >
             <SCanvas className="canvas" ref={canvasRef} />
+            <Box as="p" bg={playerLifePoints <= 1 ? "red" : "blue"} w={20} h={10} textAlign="center" fontSize={24} color="white">{playerLifePoints}</Box>
             <Flex>
                 <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStart}>START</Button>
                 <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStop}>STOP</Button>
