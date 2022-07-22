@@ -45,7 +45,7 @@ export const InvaderGame: FC<Props> = memo((props) => {
     const PLAYER_LIFE_POINT = 3;
     const INVADER_SIZE = 7;
     const INVADER_MOVEMENT_HORIZONTAL = 5; //敵の横移動距離
-    const INVADER_MOVEMENT_VERTICAL = 6; //敵の縦移動距離
+    const INVADER_MOVEMENT_VERTICAL = 8; //敵の縦移動距離
     const INVADER_SPEED = invaderSpeed; //敵の移動速度(0に近づくほど速い)
     const INVADERS_DISTANCE_HORIZONTAL = 8; //敵の横間隔
     const INVADERS_DISTANCE_VERTICAL = 2; //敵の縦間隔
