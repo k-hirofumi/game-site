@@ -1,11 +1,11 @@
 import { Button } from "@chakra-ui/react";
-import { FC } from "react";
+import { FC, memo } from "react";
 
 type Props = {
     gameStart: () => void;
     gameStop: () => void;
 }
-export const InvaderButtons: FC<Props> = (props) => {
+export const InvaderButtons: FC<Props> = memo((props) => {
     const { gameStart, gameStop } = props;
     return (
         <>
@@ -13,4 +13,4 @@ export const InvaderButtons: FC<Props> = (props) => {
             <Button m={2} bg={'white'} boxShadow='outline' onClick={gameStop}>STOP</Button>
         </>
     )
-}
+})
