@@ -1,6 +1,8 @@
 # Deploy to Heroku
 ### `git push heroku main`
 
+ref:[https://stackabuse.com/how-to-deploy-a-react-app-to-heroku/]
+
 
 # Getting Started with Create React App
 
