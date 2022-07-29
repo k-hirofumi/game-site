@@ -13,10 +13,11 @@ export const Router = memo(() => {
         <Routes>
             <Route path="/" element={<MainLayout />} >
                 <Route index element={<Home />} />
-                <Route path="game1" element={<GameLayout />} >
-                    <Route index element={<Game1 mode={'hard'} />} />
+                <Route path="invader" element={<GameLayout />} >
+                    <Route index element={<Game1 />} />
                     <Route path="result" element={<Result />} />
                 </Route>
+
                 <Route path="GamePre1" element={<GamePre1 />} />
                 <Route path="result" element={<Result />} />
                 <Route path="practice" element={<Practice />} />

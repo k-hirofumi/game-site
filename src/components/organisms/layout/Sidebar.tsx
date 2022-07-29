@@ -6,7 +6,7 @@ import {
     Flex,
     Icon,
     useColorModeValue,
-    Link,
+    // Link,
     Drawer,
     DrawerContent,
     Text,
@@ -14,6 +14,7 @@ import {
     BoxProps,
     FlexProps,
 } from '@chakra-ui/react';
+import { Link } from "react-router-dom";
 import {
     FiHome,
     FiTrendingUp,
@@ -30,13 +31,12 @@ import { ReactText } from 'react';
 interface LinkItemProps {
     name: string;
     icon: IconType;
+    link: string;
 }
 const LinkItems: Array<LinkItemProps> = [
-    { name: 'Invader EASY', icon: RiAliensLine },
-    { name: 'Invader NORMAL', icon: RiAliensLine },
-    { name: 'Invader HARD', icon: RiAliensLine },
-    { name: 'Pacman', icon: TbPacman },
-    { name: 'Pacman', icon: TbPacman },
+    { name: 'Invader', icon: RiAliensLine, link: "invader" },
+    { name: 'Pacman', icon: TbPacman, link: "game1_easy" },
+    { name: 'Pacman', icon: TbPacman, link: "game1_easy" },
 ];
 
 export function Sidebar({ children }: { children: ReactNode }) {
@@ -92,7 +92,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
                 <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
             </Flex>
             {LinkItems.map((link) => (
-                <NavItem key={link.name} icon={link.icon}>
+                <NavItem key={link.name} icon={link.icon} link={link.link}>
                     {link.name}
                 </NavItem>
             ))}
@@ -102,11 +102,13 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
 interface NavItemProps extends FlexProps {
     icon: IconType;
+    link: string;
     children: ReactText;
 }
-const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
+const NavItem = ({ icon, link, children, ...rest }: NavItemProps) => {
     return (
-        <Link href="#" style={{ textDecoration: 'none' }} _focus={{ boxShadow: 'none' }}>
+        // <Link href={link} style={{ textDecoration: 'none' }} _focus={{ boxShadow: 'none' }}>
+        <Link to={link} style={{ textDecoration: 'none' }} >
             <Flex
                 align="center"
                 p="4"

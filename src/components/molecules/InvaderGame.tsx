@@ -254,7 +254,7 @@ export const InvaderGame: FC<Props> = memo((props) => {
                     return count;
 
                 })
-                navigate('/game1/result', {
+                navigate('/invader/result', {
                     state: {
                         time: timeCountRef.current * (TIME_INTERVAL / 1000), defeatedCount: getDefeatedCount()
                     }
@@ -309,7 +309,7 @@ export const InvaderGame: FC<Props> = memo((props) => {
     //ゲーム終了判定
     const isEnd = useCallback(() => {
         gameStop();
-        navigate('/game1/result', {
+        navigate('/invader/result', {
             state: {
                 time: Math.floor(timeCountRef.current * (TIME_INTERVAL / 1000)), defeatedCount: getDefeatedCount()
             }
